@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NASA Web Server Log Analysis - Big Data MapReduce Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+      --subtle: #64748b;
+      --primary: #1d4ed8;
+      --primary-light: #eff6ff;
+      --primary-border: #bfdbfe;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .title p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .status {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #15803d;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 5px 14px;
+      border-radius: 4px;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* 4 Clean KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .kpi-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--subtle);
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Clean Navigation Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 5px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary-border);
+      font-weight: 600;
+    }
+
+    /* Tab Content Area */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Structured Description Layout */
+    .desc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .desc-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .card-full {
+      grid-column: 1 / -1;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-subtitle {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--primary-border);
+    }
+
+    .text-content {
+      font-size: 0.89rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .text-content p {
+      margin-bottom: 12px;
+    }
+
+    .text-content strong {
+      color: var(--text);
+    }
+
+    .text-content ul, .text-content ol {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .text-content li {
+      margin-bottom: 6px;
+    }
+
+    .highlight-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: 4px;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .code-block {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.81rem;
+      color: #0f172a;
+      margin: 10px 0;
+      word-break: break-all;
+    }
+
+    /* Visual 2-Column Layout for Analysis Tabs */
+    .analysis-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 860px) {
+      .analysis-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 9px 12px;
+      background: #f8fafc;
+      color: var(--subtle);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mono {
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .chart-box {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      background: #ffffff;
+      margin-bottom: 14px;
+    }
+
+    .chart-box img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Clean Academic Header -->
+  <header>
+    <div class="title">
+      <h1>NASA Web Server Log Analysis</h1>
+      <p>A Case Study on Hadoop MapReduce &bull; NASA Kennedy Space Center HTTP Logs (July 1995)</p>
+    </div>
+    <div class="status">
+      Status: 1,891,714 Records Verified
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- 4 Clean KPI Summary Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Valid Requests</div>
+        <div class="kpi-value">1,891,714</div>
+        <div class="kpi-desc">100% parsed successfully</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Bandwidth Transferred</div>
+        <div class="kpi-value">36.04 GB</div>
+        <div class="kpi-desc">38,695,973,491 total bytes</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Peak Traffic Hour</div>
+        <div class="kpi-value">14:00 EDT</div>
+        <div class="kpi-desc">122,479 requests / hour</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Average Error Rate</div>
+        <div class="kpi-value">0.575%</div>
+        <div class="kpi-desc">99.42% success & cache hits</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs: Comprehensive Project Overview First, followed by the 6 Analyses -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('overview')">Project Overview & Background</button>
+      <button class="tab-btn" onclick="switchTab('hourly')">1. Hourly Traffic</button>
+      <button class="tab-btn" onclick="switchTab('urls')">2. Top 10 URLs</button>
+      <button class="tab-btn" onclick="switchTab('status')">3. Status Codes</button>
+      <button class="tab-btn" onclick="switchTab('ips')">4. Top Client IPs</button>
+      <button class="tab-btn" onclick="switchTab('bytes')">5. Daily Bytes</button>
+      <button class="tab-btn" onclick="switchTab('errors')">6. Daily Error Rates</button>
+    </div>
+
+    <!-- TAB 0: Comprehensive Project Overview & Problem Statement -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="desc-grid">
+        
+        <!-- SECTION 1: Introduction & Problem Statement -->
+        <div class="card text-content">
+          <div class="card-title">
+            <span>1. Introduction & Problem Statement</span>
+            <span class="card-subtitle">The Core Problem</span>
+          </div>
+          <p><strong>Introduction:</strong> When thousands of global users browse a mission-critical web server like the NASA Kennedy Space Center, the web server writes an entry for every single resource requested into an access log file.</p>
+          <p><strong>The Big Data Problem:</strong> Over an extended period, this log grows into massive volumes (over 205 Megabytes containing 1.89 million records in our July 1995 dataset). Traditional data processing methods face severe limitations:</p>
+          <ul>
+            <li><strong>Memory Overflow:</strong> Loading millions of unstructured lines into memory in standard Python or Excel causes system crashes and out-of-memory errors.</li>
+            <li><strong>Lack of Scalability:</strong> Single-threaded sequential processing cannot scale horizontally across cluster nodes as data volumes grow into gigabytes or terabytes.</li>
+            <li><strong>Data Quality Issues:</strong> Real logs contain malformed requests, truncated end-of-file lines, internal quotations, and missing byte lengths (recorded as hyphens <code>-</code>) that break naive parsers.</li>
+          </ul>
+          <div class="highlight-box">
+            <strong>The Illustrative Challenge:</strong> If 3 lines take a few seconds to calculate manually, analyzing 1,891,714 lines manually is completely impossible. We must automate extraction, aggregation, and visualization.
+          </div>
+        </div>
+
+        <!-- SECTION 2: Our Goal & Objectives -->
+        <div class="card text-content">
+          <div class="card-title">
+            <span>2. Project Goals & The 6 Research Questions</span>
+            <span class="card-subtitle">Objectives</span>
+          </div>
+          <p><strong>Primary Goal:</strong> Build a clean, distributed big data processing pipeline using <strong>Apache Hadoop MapReduce</strong> and <strong>Hadoop Streaming in Python</strong> to automatically extract operational intelligence from raw access logs.</p>
+          <p><strong>Our Project Answers Six Specific Questions:</strong></p>
+          <ol>
+            <li><strong>When does the website receive the most requests?</strong> &rarr; Count request distribution by hour of the day (00 through 23 EDT).</li>
+            <li><strong>Which pages or resources are requested most often?</strong> &rarr; Identify and rank the top 10 most requested URLs.</li>
+            <li><strong>Which HTTP status codes occur most frequently?</strong> &rarr; Measure server success, redirects, client errors, and server errors.</li>
+            <li><strong>Which client IP addresses generate the most requests?</strong> &rarr; Identify the top 10 most active client hosts and proxies.</li>
+            <li><strong>How many response bytes does the server send each day?</strong> &rarr; Calculate total network bandwidth volume transferred per calendar date.</li>
+            <li><strong>What percentage of requests fail each day?</strong> &rarr; Compute daily HTTP error rate percentage for status codes 400–599.</li>
+          </ol>
+        </div>
+
+        <!-- SECTION 3: Dataset Description & Format -->
+        <div class="card text-content">
+          <div class="card-title">
+            <span>3. Dataset Source & Format Specification</span>
+            <span class="card-subtitle">NASA July 1995 Trace</span>
+          </div>
+          <p><strong>Dataset Source:</strong> Internet Traffic Archive (ITA), sponsored by Lawrence Berkeley National Laboratory.</p>
+          <p><strong>Collection & Context:</strong> Collected by Jim Dumoulin on the NASA Kennedy Space Center WWW server in Florida. Contributed by Martin Arlitt and Carey Williamson for their landmark 1996 ACM SIGMETRICS study on web server workload characterization.</p>
+          <p><strong>Dataset Specifications:</strong></p>
+          <ul>
+            <li><strong>Trace Window:</strong> 00:00:01 EDT on July 1, 1995 to 23:59:59 EDT on July 28, 1995.</li>
+            <li><strong>Raw Line Count:</strong> Exactly 1,891,715 lines (205.2 MB uncompressed).</li>
+            <li><strong>Valid Parsed Records:</strong> 1,891,714 records (100% verified).</li>
+            <li><strong>Corrupted Lines:</strong> Exactly 1 line at the very end of the file (<code>alyssa.p</code>), caused by host server disk space exhaustion on July 28, 1995.</li>
+          </ul>
+          <p><strong>Sample Record (Common Log Format):</strong></p>
+          <div class="code-block">199.72.81.55 - - [01/Jul/1995:00:00:01 -0400] "GET /history/apollo/ HTTP/1.0" 200 6245</div>
+          <p><strong>Field Breakdown:</strong> Client IP (<code>199.72.81.55</code>) &bull; Timestamp (<code>01/Jul/1995:00:00:01 -0400</code>) &bull; HTTP Request (<code>GET /history/apollo/ HTTP/1.0</code>) &bull; Status Code (<code>200</code>) &bull; Response Size (<code>6245</code> bytes, with <code>-</code> safely mapped to <code>0</code>).</p>
+        </div>
+
+        <!-- SECTION 4: How We Solved It (MapReduce Model) -->
+        <div class="card text-content">
+          <div class="card-title">
+            <span>4. How We Solved It (Hadoop MapReduce Architecture)</span>
+            <span class="card-subtitle">Map &bull; Sort &bull; Reduce</span>
+          </div>
+          <p>Instead of processing logs with a monolithic in-memory script, we implemented the <strong>MapReduce programming model</strong> using Hadoop Streaming:</p>
+          <ul>
+            <li><strong>1. Mapper Step:</strong> Reads log lines from standard input (<code>sys.stdin</code>), extracts the target key, and emits intermediate key-value pairs (e.g. for status codes: <code>200 1</code>, <code>404 1</code>, <code>200 1</code>).</li>
+            <li><strong>2. Shuffle & Sort Step:</strong> The Hadoop framework automatically groups all values sharing the same key together: <code>200 [1, 1, 1]</code>, <code>404 [1]</code>.</li>
+            <li><strong>3. Reducer Step:</strong> Reads grouped keys from <code>sys.stdin</code> and performs streaming aggregation in $O(1)$ memory: <code>200 3</code>, <code>404 1</code>. For Top-10 queries, it maintains a bounded min-heap of size 10 to prevent high memory usage.</li>
+          </ul>
+          <div class="highlight-box">
+            <strong>Clean 3-File Architecture in <code>src/</code>:</strong><br>
+            &bull; <code>log_parser.py</code>: Parses Common Log Format safely.<br>
+            &bull; <code>mappers.py</code>: Implements the Map step for all 6 analyses.<br>
+            &bull; <code>reducers.py</code>: Implements the Reduce step for all 6 analyses.
+          </div>
+        </div>
+
+        <!-- SECTION 5: Summary of What We Got (Findings & Results) -->
+        <div class="card text-content card-full">
+          <div class="card-title">
+            <span>5. What We Got: Key Findings & Measured Invariants</span>
+            <span class="card-subtitle">Real Computed Results</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            <div>
+              <p><strong>1. Hourly Diurnal Cycle:</strong><br>
+              Traffic follows a sharp business workday pattern: minimum at <strong>05:00 EDT (31,919 requests)</strong> and peak at <strong>14:00 EDT (122,479 requests)</strong>.</p>
+              <p style="margin-top: 8px;"><strong>2. File Type Invariant:</strong><br>
+              The top resource was <code>/images/NASA-logosmall.gif</code> (111,388 requests). 8 of the top 10 URLs are GIF images, proving multimedia graphics dominate server load.</p>
+            </div>
+            <div>
+              <p><strong>3. High Server Reliability:</strong><br>
+              89.95% of responses were HTTP 200 (Success) and 7.01% were HTTP 304 (Cache Hits). Overall error rates (4xx + 5xx) represented only <strong>0.58%</strong> of total volume.</p>
+              <p style="margin-top: 8px;"><strong>4. Client Concentration:</strong><br>
+              Four of the top five client hosts were Prodigy Services dial-up ISP web proxies (e.g. <code>piweba3y.prodigy.com</code> with 17,572 requests).</p>
+            </div>
+            <div>
+              <p><strong>5. Space Shuttle Discovery Peak:</strong><br>
+              Total network volume was <strong>36.04 GB (38.70 GB)</strong>. The absolute peak occurred on <strong>July 13, 1995 (2.63 GB, 134,203 requests)</strong> due to the launch of Space Shuttle Discovery on STS-70.</p>
+              <p style="margin-top: 8px;"><strong>6. Stable Error Rate:</strong><br>
+              Daily error rates averaged <strong>0.575%</strong>, remaining strictly below 1.0% throughout the entire month.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 1: Hourly Requests -->
+    <div id="tab-hourly" class="tab-content">
+      <div class="analysis-layout">
+        <div class="card">
+          <div class="card-title">Hourly Request Distribution (00 to 23 EDT)</div>
+          <div class="chart-box">
+            <img src="../charts/hourly_requests.png" alt="Hourly Traffic Chart">
+          </div>
+          <div class="text-content" style="font-size: 0.84rem;">
+            <strong>Analysis 1 Summary:</strong> Quantifies traffic fluctuations across the 24 hours of the day. Traffic peaks at 14:00 EDT (122,479 requests) and bottoms out at 05:00 EDT (31,919 requests).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Data Table (outputs/hourly/hourly_requests.csv)</div>
+          <div style="max-height: 480px; overflow-y: auto;">
+            <table class="data-table" id="hourlyTable">
+              <thead><tr><th>Hour</th><th>Requests</th><th>Traffic Share</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Top URLs -->
+    <div id="tab-urls" class="tab-content">
+      <div class="analysis-layout">
+        <div class="card">
+          <div class="card-title">Top 10 Most Requested URLs</div>
+          <div class="chart-box">
+            <img src="../charts/top_urls.png" alt="Top URLs Chart">
+          </div>
+          <div class="text-content" style="font-size: 0.84rem;">
+            <strong>Analysis 2 Summary:</strong> Ranks endpoints by access frequency. 8 out of the top 10 URLs are image logos (<code>.gif</code>), confirming the workload invariant that multimedia files generate the highest request volume.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Data Table (outputs/urls/top_urls.csv)</div>
+          <table class="data-table" id="urlsTable">
+            <thead><tr><th>Rank</th><th>URL Path</th><th>Requests</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Status Codes -->
+    <div id="tab-status" class="tab-content">
+      <div class="analysis-layout">
+        <div class="card">
+          <div class="card-title">HTTP Status Code Distribution (Log Scale)</div>
+          <div class="chart-box">
+            <img src="../charts/status_distribution.png" alt="Status Codes Chart">
+          </div>
+          <div class="text-content" style="font-size: 0.84rem;">
+            <strong>Analysis 3 Summary:</strong> Evaluates server response behavior. Over 99.4% of all requests succeeded without server failure (200 OK + 304 Not Modified + 302 Found).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Data Table (outputs/status/status_distribution.csv)</div>
+          <table class="data-table" id="statusTable">
+            <thead><tr><th>Code</th><th>Meaning</th><th>Count</th><th>Share</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Top Client IPs -->
+    <div id="tab-ips" class="tab-content">
+      <div class="analysis-layout">
+        <div class="card">
+          <div class="card-title">Top 10 Client Hosts / IP Addresses</div>
+          <div class="chart-box">
+            <img src="../charts/top_ips.png" alt="Top Client IPs Chart">
+          </div>
+          <div class="text-content" style="font-size: 0.84rem;">
+            <strong>Analysis 4 Summary:</strong> Identifies heaviest consumers. Major commercial ISP gateways (Prodigy Services) account for 4 of the top 5 hosts, acting as shared access points for dial-up users.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Data Table (outputs/ips/top_ips.csv)</div>
+          <table class="data-table" id="ipsTable">
+            <thead><tr><th>Rank</th><th>Client Host / IP</th><th>Requests</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Daily Bytes -->
+    <div id="tab-bytes" class="tab-content">
+      <div class="analysis-layout">
+        <div class="card">
+          <div class="card-title">Daily Transferred Volume (Gigabytes)</div>
+          <div class="chart-box">
+            <img src="../charts/daily_bytes.png" alt="Daily Bytes Chart">
+          </div>
+          <div class="text-content" style="font-size: 0.84rem;">
+            <strong>Analysis 5 Summary:</strong> Tracks daily network bandwidth. Total payload: 36.04 GB. Peak volume occurred on July 13, 1995 (2.63 GB) coinciding with the launch of Space Shuttle Discovery (STS-70).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Data Table (outputs/daily_bytes/daily_bytes.csv)</div>
+          <div style="max-height: 480px; overflow-y: auto;">
+            <table class="data-table" id="bytesTable">
+              <thead><tr><th>Date</th><th>Bytes</th><th>Volume (GB)</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: Daily Error Rate -->
+    <div id="tab-errors" class="tab-content">
+      <div class="analysis-layout">
+        <div class="card">
+          <div class="card-title">Daily HTTP Error Rate (%)</div>
+          <div class="chart-box">
+            <img src="../charts/daily_errors.png" alt="Daily Error Rate Chart">
+          </div>
+          <div class="text-content" style="font-size: 0.84rem;">
+            <strong>Analysis 6 Summary:</strong> Computes percentage of 4xx and 5xx errors per day normalized by valid daily requests. The average error rate was 0.575%, demonstrating high web service availability.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Data Table (outputs/daily_errors/daily_errors.csv)</div>
+          <div style="max-height: 480px; overflow-y: auto;">
+            <table class="data-table" id="errorsTable">
+              <thead><tr><th>Date</th><th>Errors</th><th>Total</th><th>Error %</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const HOURLY_DATA = [
+      ["00", 62450], ["01", 53066], ["02", 45297], ["03", 37398], ["04", 32234], ["05", 31919],
+      ["06", 35253], ["07", 54017], ["08", 83750], ["09", 99969], ["10", 105507], ["11", 115720],
+      ["12", 122085], ["13", 120814], ["14", 122479], ["15", 121200], ["16", 118037], ["17", 97609],
+      ["18", 79282], ["19", 71776], ["20", 69809], ["21", 71922], ["22", 70759], ["23", 69362]
+    ];
+
+    const URLS_DATA = [
+      ["/images/NASA-logosmall.gif", 111388],
+      ["/images/KSC-logosmall.gif", 89639],
+      ["/images/MOSAIC-logosmall.gif", 60468],
+      ["/images/USA-logosmall.gif", 60014],
+      ["/images/WORLD-logosmall.gif", 59489],
+      ["/images/ksclogo-medium.gif", 58802],
+      ["/images/launch-logo.gif", 40871],
+      ["/shuttle/countdown/", 40279],
+      ["/ksc.html", 40231],
+      ["/images/ksclogosmall.gif", 33585]
+    ];
+
+    const STATUS_DATA = [
+      [200, "OK (Success)", 1701534, "89.95%"],
+      [304, "Not Modified (Cache Hit)", 132627, "7.01%"],
+      [302, "Found (Redirect)", 46573, "2.46%"],
+      [404, "Not Found (Client Error)", 10845, "0.57%"],
+      [500, "Internal Server Error", 62, "<0.01%"],
+      [403, "Forbidden", 54, "<0.01%"],
+      [501, "Not Implemented", 14, "<0.01%"],
+      [400, "Bad Request", 5, "<0.01%"]
+    ];
+
+    const IPS_DATA = [
+      ["piweba3y.prodigy.com", 17572],
+      ["piweba4y.prodigy.com", 11591],
+      ["piweba1y.prodigy.com", 9868],
+      ["alyssa.prodigy.com", 7852],
+      ["siltb10.orl.mmc.com", 7573],
+      ["piweba2y.prodigy.com", 5922],
+      ["edams.ksc.nasa.gov", 5434],
+      ["163.206.89.4", 4906],
+      ["news.ti.com", 4863],
+      ["disarray.demon.co.uk", 4353]
+    ];
+
+    const BYTES_DATA = [
+      ["01/Jul/1995", 1617628039, 1.51], ["02/Jul/1995", 1531780088, 1.43],
+      ["03/Jul/1995", 2085328363, 1.94], ["04/Jul/1995", 1744473383, 1.62],
+      ["05/Jul/1995", 2051241854, 1.91], ["06/Jul/1995", 2219011831, 2.07],
+      ["07/Jul/1995", 1952296797, 1.82], ["08/Jul/1995", 928146744, 0.86],
+      ["09/Jul/1995", 754180424, 0.70], ["10/Jul/1995", 1376671607, 1.28],
+      ["11/Jul/1995", 1387985321, 1.29], ["12/Jul/1995", 1715160611, 1.60],
+      ["13/Jul/1995", 2634775361, 2.45], ["14/Jul/1995", 1922512157, 1.79],
+      ["15/Jul/1995", 976080114, 0.91], ["16/Jul/1995", 1040946427, 0.97],
+      ["17/Jul/1995", 1432840632, 1.33], ["18/Jul/1995", 1177706801, 1.10],
+      ["19/Jul/1995", 1359920245, 1.27], ["20/Jul/1995", 1205866683, 1.12],
+      ["21/Jul/1995", 1131310741, 1.05], ["22/Jul/1995", 666849555, 0.62],
+      ["23/Jul/1995", 766191614, 0.71], ["24/Jul/1995", 1213143555, 1.13],
+      ["25/Jul/1995", 1148520557, 1.07], ["26/Jul/1995", 1041367234, 0.97],
+      ["27/Jul/1995", 1124849017, 1.05], ["28/Jul/1995", 489187736, 0.46]
+    ];
+
+    const ERRORS_DATA = [
+      ["01/Jul/1995", 316, 64714, "0.4883%"], ["02/Jul/1995", 296, 60265, "0.4912%"],
+      ["03/Jul/1995", 529, 89584, "0.5905%"], ["04/Jul/1995", 363, 70452, "0.5152%"],
+      ["05/Jul/1995", 500, 94575, "0.5287%"], ["06/Jul/1995", 645, 100960, "0.6389%"],
+      ["07/Jul/1995", 572, 87233, "0.6557%"], ["08/Jul/1995", 302, 38867, "0.7770%"],
+      ["09/Jul/1995", 348, 35272, "0.9866%"], ["10/Jul/1995", 400, 72860, "0.5490%"],
+      ["11/Jul/1995", 471, 80407, "0.5858%"], ["12/Jul/1995", 474, 92536, "0.5122%"],
+      ["13/Jul/1995", 534, 134203, "0.3979%"], ["14/Jul/1995", 416, 84103, "0.4946%"],
+      ["15/Jul/1995", 254, 45532, "0.5578%"], ["16/Jul/1995", 257, 47854, "0.5371%"],
+      ["17/Jul/1995", 408, 74981, "0.5441%"], ["18/Jul/1995", 484, 64282, "0.7529%"],
+      ["19/Jul/1995", 641, 72738, "0.8812%"], ["20/Jul/1995", 431, 66593, "0.6472%"],
+      ["21/Jul/1995", 334, 64629, "0.5168%"], ["22/Jul/1995", 194, 35267, "0.5501%"],
+      ["23/Jul/1995", 233, 39199, "0.5944%"], ["24/Jul/1995", 335, 64259, "0.5213%"],
+      ["25/Jul/1995", 468, 62699, "0.7464%"], ["26/Jul/1995", 340, 58849, "0.5777%"],
+      ["27/Jul/1995", 341, 61680, "0.5529%"], ["28/Jul/1995", 94, 27121, "0.3466%"]
+    ];
+
+    function populateTables() {
+      // Hourly
+      const totalHourly = 1891714;
+      document.querySelector("#hourlyTable tbody").innerHTML = HOURLY_DATA.map(([hr, count]) => {
+        const share = ((count / totalHourly) * 100).toFixed(2);
+        return `<tr><td class="mono">${hr}:00 EDT</td><td class="mono">${count.toLocaleString()}</td><td>${share}%</td></tr>`;
+      }).join("");
+
+      // URLs
+      document.querySelector("#urlsTable tbody").innerHTML = URLS_DATA.map(([url, count], idx) => {
+        return `<tr><td>${idx + 1}</td><td class="mono" style="color: #1d4ed8; font-weight: 500;">${url}</td><td class="mono">${count.toLocaleString()}</td></tr>`;
+      }).join("");
+
+      // Status
+      document.querySelector("#statusTable tbody").innerHTML = STATUS_DATA.map(([code, desc, count, pct]) => {
+        return `<tr><td class="mono" style="font-weight: 600;">${code}</td><td>${desc}</td><td class="mono">${count.toLocaleString()}</td><td class="mono">${pct}</td></tr>`;
+      }).join("");
+
+      // IPs
+      document.querySelector("#ipsTable tbody").innerHTML = IPS_DATA.map(([host, count], idx) => {
+        return `<tr><td>${idx + 1}</td><td class="mono">${host}</td><td class="mono">${count.toLocaleString()}</td></tr>`;
+      }).join("");
+
+      // Bytes
+      document.querySelector("#bytesTable tbody").innerHTML = BYTES_DATA.map(([date, bytes, gb]) => {
+        const isPeak = date === "13/Jul/1995";
+        return `<tr style="${isPeak ? 'background: #eff6ff; font-weight: 600;' : ''}"><td class="mono">${date} ${isPeak ? '(STS-70 Launch)' : ''}</td><td class="mono">${bytes.toLocaleString()}</td><td class="mono">${gb} GB</td></tr>`;
+      }).join("");
+
+      // Errors
+      document.querySelector("#errorsTable tbody").innerHTML = ERRORS_DATA.map(([date, errs, tot, pct]) => {
+        return `<tr><td class="mono">${date}</td><td class="mono">${errs}</td><td class="mono">${tot.toLocaleString()}</td><td class="mono">${pct}</td></tr>`;
+      }).join("");
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+
+      const targetBtn = Array.from(document.querySelectorAll(".tab-btn")).find(b => b.getAttribute("onclick").includes(tabId));
+      if (targetBtn) targetBtn.classList.add("active");
+
+      const targetContent = document.getElementById("tab-" + tabId);
+      if (targetContent) targetContent.classList.add("active");
+    }
+
+    document.addEventListener("DOMContentLoaded", populateTables);
+  </script>
+</body>
+</html>

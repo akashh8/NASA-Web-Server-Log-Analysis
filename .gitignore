@@ -1,0 +1,3 @@
+__pycache__/
+.pytest_cache/
+data/raw/NASA_access_log_Jul95.log

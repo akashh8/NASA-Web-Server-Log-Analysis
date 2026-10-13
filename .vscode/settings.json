@@ -1,0 +1,14 @@
+{
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/src",
+    "${workspaceFolder}/nasa-log-analysis",
+    "${workspaceFolder}/nasa-log-analysis/src"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/src",
+    "${workspaceFolder}/nasa-log-analysis",
+    "${workspaceFolder}/nasa-log-analysis/src"
+  ]
+}

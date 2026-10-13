@@ -1,0 +1,28 @@
+199.72.81.55 - - [01/Jul/1995:00:00:01 -0400] "GET /history/apollo/ HTTP/1.0" 200 6245
+unicomp6.unicomp.net - - [01/Jul/1995:00:00:06 -0400] "GET /shuttle/countdown/ HTTP/1.0" 200 3985
+199.120.110.21 - - [01/Jul/1995:00:00:09 -0400] "GET /shuttle/missions/sts-73/mission-sts-73.html HTTP/1.0" 200 4085
+burger.letters.com - - [01/Jul/1995:00:00:11 -0400] "GET /shuttle/countdown/liftoff.html HTTP/1.0" 304 0
+199.120.110.21 - - [01/Jul/1995:01:00:11 -0400] "GET /shuttle/missions/sts-73/sts-73-patch-small.gif HTTP/1.0" 200 4179
+burger.letters.com - - [01/Jul/1995:01:10:12 -0400] "GET /images/NASA-logosmall.gif HTTP/1.0" 304 0
+burger.letters.com - - [01/Jul/1995:02:15:12 -0400] "GET /shuttle/countdown/video/livevideo.gif HTTP/1.0" 200 0
+205.212.115.106 - - [01/Jul/1995:02:30:12 -0400] "GET /shuttle/countdown/countdown.html HTTP/1.0" 200 3985
+d104.aa.net - - [01/Jul/1995:03:00:13 -0400] "GET /shuttle/countdown/ HTTP/1.0" 200 3985
+129.94.144.152 - - [01/Jul/1995:03:15:13 -0400] "GET / HTTP/1.0" 200 7074
+unicomp6.unicomp.net - - [01/Jul/1995:04:00:14 -0400] "GET /shuttle/countdown/count.gif HTTP/1.0" 200 40310
+unicomp6.unicomp.net - - [01/Jul/1995:04:10:14 -0400] "GET /images/NASA-logosmall.gif HTTP/1.0" 200 786
+unicomp6.unicomp.net - - [01/Jul/1995:05:00:14 -0400] "GET /images/KSC-logosmall.gif HTTP/1.0" 200 1204
+d104.aa.net - - [01/Jul/1995:06:00:15 -0400] "GET /shuttle/countdown/count.gif HTTP/1.0" 200 40310
+d104.aa.net - - [01/Jul/1995:07:00:15 -0400] "GET /images/NASA-logosmall.gif HTTP/1.0" 200 786
+d104.aa.net - - [01/Jul/1995:08:00:15 -0400] "GET /images/KSC-logosmall.gif HTTP/1.0" 200 1204
+129.94.144.152 - - [01/Jul/1995:09:00:17 -0400] "GET /images/ksclogo-medium.gif HTTP/1.0" 200 5866
+199.120.110.21 - - [01/Jul/1995:10:00:17 -0400] "GET /images/launch-logo.gif HTTP/1.0" 200 1713
+ppptky391.asahi-net.or.jp - - [01/Jul/1995:11:00:18 -0400] "GET /facts/about_ksc.html HTTP/1.0" 200 3977
+net-1-141.eden.com - - [01/Jul/1995:12:00:19 -0400] "GET /shuttle/missions/sts-71/images/KSC-95EC-0916.txt HTTP/1.0" 200 1204
+ppptky391.asahi-net.or.jp - - [01/Jul/1995:13:00:19 -0400] "GET /images/launchpat.gif HTTP/1.0" 200 1173
+net-1-141.eden.com - - [01/Jul/1995:14:00:19 -0400] "GET /shuttle/missions/sts-71/images/KSC-95EC-0916.txt HTTP/1.0" 404 -
+badhost - - [01/Jul/1995:15:00:00 -0400] "GET /broken HTTP/1.0" 500 512
+205.212.115.106 - - [02/Jul/1995:00:00:20 -0400] "GET /shuttle/countdown/ HTTP/1.0" 200 3985
+205.212.115.106 - - [02/Jul/1995:01:00:20 -0400] "GET /missing.html HTTP/1.0" 404 -
+205.212.115.106 - - [02/Jul/1995:02:00:20 -0400] "GET /error.html HTTP/1.0" 500 240
+MALFORMED_LINE_WITHOUT_PROPER_STRUCTURE
+another.host.com - - invalid_timestamp "GET /test HTTP/1.0" 200 100
